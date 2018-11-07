@@ -17,6 +17,12 @@ android {
         versionCode 1
         versionName "1.0"
 
+        javaCompileOptions {
+            annotationProcessorOptions {
+                compilerArgumentProvider new EnableDaggerIncrementalAP()
+            }
+        }
+
         testInstrumentationRunner 'it.codingjam.github.espresso.MockTestRunner'
     }
 
@@ -44,7 +50,15 @@ android {
 dependencies {
     implementation project(':uirepo')
 
-    kaptAndroidTest "com.google.dagger:dagger-compiler:$dagger_version"
+    kapt "com.google.dagger:dagger-compiler:$dagger_version"
     androidTestImplementation project(':androidTestLib')
     androidTestImplementation project(':testData')
+}
+
+class EnableDaggerIncrementalAP implements CommandLineArgumentProvider {
+
+    @Override
+    Iterable<String> asArguments() {
+        return ["-Adagger.gradle.incremental"]
+    }
 }

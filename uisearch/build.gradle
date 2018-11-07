@@ -16,6 +16,11 @@ android {
         targetSdkVersion 27
         versionCode 1
         versionName "1.0"
+        javaCompileOptions {
+            annotationProcessorOptions {
+                compilerArgumentProvider new EnableDaggerIncrementalAP()
+            }
+        }
     }
 
     buildTypes {
@@ -43,5 +48,13 @@ dependencies {
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
     kotlinOptions{
         freeCompilerArgs = ["-Xskip-metadata-version-check"]
+    }
+}
+
+class EnableDaggerIncrementalAP implements CommandLineArgumentProvider {
+
+    @Override
+    Iterable<String> asArguments() {
+        return ["-Adagger.gradle.incremental"]
     }
 }

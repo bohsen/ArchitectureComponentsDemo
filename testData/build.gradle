@@ -10,6 +10,11 @@ android {
         targetSdkVersion 27
         versionCode 1
         versionName "1.0"
+        javaCompileOptions {
+            annotationProcessorOptions {
+                compilerArgumentProvider new EnableDaggerIncrementalAP()
+            }
+        }
     }
 
     buildTypes {
@@ -40,4 +45,12 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 
     kapt "com.google.dagger:dagger-compiler:$dagger_version"
+}
+
+class EnableDaggerIncrementalAP implements CommandLineArgumentProvider {
+
+    @Override
+    Iterable<String> asArguments() {
+        return ["-Adagger.gradle.incremental"]
+    }
 }

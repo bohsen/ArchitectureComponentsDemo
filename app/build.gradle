@@ -33,6 +33,11 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner 'it.codingjam.github.espresso.MockTestRunner'
+        javaCompileOptions {
+            annotationProcessorOptions {
+                compilerArgumentProvider new EnableDaggerIncrementalAP()
+            }
+        }
     }
     buildTypes {
         debug {
@@ -91,7 +96,7 @@ dependencies {
     androidTestImplementation project(':testData')
 }
 
-task fullCoverageReport(type: JacocoReport) {
+tasks.register("fullCoverageReport", JacocoReport) {
     dependsOn 'createDebugCoverageReport'
     dependsOn 'testDebugUnitTest'
     reports {
@@ -118,4 +123,12 @@ task fullCoverageReport(type: JacocoReport) {
             "jacoco/testDebugUnitTest.exec",
             "outputs/code-coverage/connected/*coverage.ec"
     ])
+}
+
+class EnableDaggerIncrementalAP implements CommandLineArgumentProvider {
+
+    @Override
+    Iterable<String> asArguments() {
+        return ["-Adagger.gradle.incremental"]
+    }
 }
