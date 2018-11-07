@@ -6,29 +6,39 @@ import android.arch.lifecycle.MutableLiveData
 import android.arch.lifecycle.Observer
 import android.os.AsyncTask
 import android.support.annotation.MainThread
-import kotlinx.coroutines.experimental.*
+import kotlinx.coroutines.experimental.CoroutineDispatcher
+import kotlinx.coroutines.experimental.CoroutineScope
+import kotlinx.coroutines.experimental.Dispatchers
+import kotlinx.coroutines.experimental.Job
 import kotlinx.coroutines.experimental.android.Main
-import kotlinx.coroutines.experimental.channels.*
-import java.util.*
+import kotlinx.coroutines.experimental.asCoroutineDispatcher
+import kotlinx.coroutines.experimental.channels.ProducerScope
+import kotlinx.coroutines.experimental.channels.ReceiveChannel
+import kotlinx.coroutines.experimental.channels.consumeEach
+import kotlinx.coroutines.experimental.channels.fold
+import kotlinx.coroutines.experimental.channels.map
+import kotlinx.coroutines.experimental.channels.produce
+import kotlinx.coroutines.experimental.launch
+import kotlinx.coroutines.experimental.withContext
+import java.util.ArrayList
 import kotlin.coroutines.experimental.CoroutineContext
 
-interface Action<out T>
+sealed class Action<out T>
 
-class StateAction<T>(private val f: T.() -> T) : Action<T> {
+class StateAction<T>(private val f: T.() -> T) : Action<T>() {
     operator fun invoke(t: T) = t.f()
 }
 
-interface Signal : Action<Nothing>
-
-data class ErrorSignal(val error: Throwable?, val message: String) : Signal {
-    constructor(t: Throwable) : this(t, t.message ?: "Error ${t.javaClass.name}")
+sealed class Signal : Action<Nothing>() {
+    data class ErrorSignal(val error: Throwable?, val message: String) : Signal() {
+        constructor(t: Throwable) : this(t, t.message ?: "Error ${t.javaClass.name}")
+    }
+    data class NavigationSignal<P>(val destination: Any, val params: P) : Signal()
 }
 
-data class NavigationSignal<P>(val destination: Any, val params: P) : Signal
-
 class ViewStateStore<T : Any>(
-        initialState: T,
-        dispatcher: CoroutineDispatcher
+    initialState: T,
+    dispatcher: CoroutineDispatcher
 ) : CoroutineScope {
 
     private val job = Job()
@@ -44,13 +54,13 @@ class ViewStateStore<T : Any>(
     private var list: MutableList<Signal> = ArrayList()
 
     fun observe(owner: LifecycleOwner, observer: (T) -> Unit) =
-            liveData.observe(owner, Observer { observer(it!!) })
+        liveData.observe(owner, Observer { observer(it!!) })
 
     fun observeSignals(owner: LifecycleOwner, executor: (Signal) -> Unit) =
-            delegate.observe(owner, Observer { _ ->
-                list.forEach { executor(it) }
-                list = ArrayList()
-            })
+        delegate.observe(owner, Observer { _ ->
+            list.forEach { executor(it) }
+            list = ArrayList()
+        })
 
     @MainThread
     fun dispatchState(state: T) {
@@ -119,24 +129,24 @@ suspend inline fun <T : Any> ReceiveActionChannel<T>.states(initialState: T): Li
 }
 
 suspend inline fun <reified S : Any> CoroutineScope.states(
-        initialState: S,
-        crossinline f: suspend CoroutineScope.(S) -> ReceiveActionChannel<S>
+    initialState: S,
+    crossinline f: suspend CoroutineScope.(S) -> ReceiveActionChannel<S>
 ): List<S> =
-        f(initialState)
-                .states(initialState)
-                .filterIsInstance<S>()
+    f(initialState)
+        .states(initialState)
+        .filterIsInstance<S>()
 
 suspend inline fun <reified S : Any> CoroutineScope.signals(
-        initialState: S,
-        crossinline f: suspend CoroutineScope.(S) -> ReceiveActionChannel<S>
+    initialState: S,
+    crossinline f: suspend CoroutineScope.(S) -> ReceiveActionChannel<S>
 ): List<Signal> =
     f(initialState)
-            .states(initialState)
-            .filterIsInstance<Signal>()
+        .states(initialState)
+        .filterIsInstance<Signal>()
 
 class ReceiveActionChannel<T>(val channel: ReceiveChannel<Action<T>>) {
     fun <R> map(copy: R.(StateAction<T>) -> R) =
-            ReceiveActionChannel(channel.map { action: Action<T> -> action.map(copy) })
+        ReceiveActionChannel(channel.map { action: Action<T> -> action.map(copy) })
 }
 
 suspend fun <T> ProducerScope<Action<T>>.sendAll(channel: ReceiveActionChannel<T>) {
@@ -146,7 +156,7 @@ suspend fun <T> ProducerScope<Action<T>>.sendAll(channel: ReceiveActionChannel<T
 }
 
 fun <T> CoroutineScope.produceActions(f: suspend ProducerScope<Action<T>>.() -> Unit): ReceiveActionChannel<T> =
-        ReceiveActionChannel(produce(block = f))
+    ReceiveActionChannel(produce(block = f))
 
 fun <R, S> Action<R>.map(copy: S.(StateAction<R>) -> S): Action<S> {
     return if (this is Signal) {

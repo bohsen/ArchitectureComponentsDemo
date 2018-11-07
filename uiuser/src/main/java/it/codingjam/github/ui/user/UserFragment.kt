@@ -28,9 +28,8 @@ import it.codingjam.github.core.UserDetail
 import it.codingjam.github.ui.common.DataBoundListAdapter
 import it.codingjam.github.ui.common.FragmentCreator
 import it.codingjam.github.ui.user.databinding.UserFragmentBinding
-import it.codingjam.github.util.ErrorSignal
 import it.codingjam.github.util.LceContainer
-import it.codingjam.github.util.NavigationSignal
+import it.codingjam.github.util.Signal
 import it.codingjam.github.util.ViewModelFactory
 import javax.inject.Inject
 import javax.inject.Provider
@@ -82,8 +81,8 @@ class UserFragment : Fragment() {
         }
         viewModel.state.observeSignals(this) {
             when (it) {
-                is ErrorSignal -> navigationController.showError(requireActivity(), it.message)
-                is NavigationSignal<*> -> navigationController.navigateToRepo(this, it.params as RepoId)
+                is Signal.ErrorSignal -> navigationController.showError(requireActivity(), it.message)
+                is Signal.NavigationSignal<*> -> navigationController.navigateToRepo(this, it.params as RepoId)
             }
         }
 

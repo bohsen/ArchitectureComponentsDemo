@@ -28,8 +28,7 @@ import it.codingjam.github.NavigationController
 import it.codingjam.github.core.RepoId
 import it.codingjam.github.ui.common.DataBoundListAdapter
 import it.codingjam.github.ui.search.databinding.SearchFragmentBinding
-import it.codingjam.github.util.ErrorSignal
-import it.codingjam.github.util.NavigationSignal
+import it.codingjam.github.util.Signal
 import it.codingjam.github.util.ViewModelFactory
 import javax.inject.Inject
 import javax.inject.Provider
@@ -85,8 +84,8 @@ class SearchFragment : Fragment() {
         }
         viewModel.state.observeSignals(this) {
             when (it) {
-                is ErrorSignal -> navigationController.showError(requireActivity(), it.message)
-                is NavigationSignal<*> -> navigationController.navigateToRepo(this, it.params as RepoId)
+                is Signal.ErrorSignal -> navigationController.showError(requireActivity(), it.message)
+                is Signal.NavigationSignal<*> -> navigationController.navigateToRepo(this, it.params as RepoId)
             }
         }
 

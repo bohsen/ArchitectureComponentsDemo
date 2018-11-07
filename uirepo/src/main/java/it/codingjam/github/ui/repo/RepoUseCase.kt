@@ -19,7 +19,7 @@ package it.codingjam.github.ui.repo
 import it.codingjam.github.core.GithubInteractor
 import it.codingjam.github.core.OpenForTesting
 import it.codingjam.github.core.RepoId
-import it.codingjam.github.util.NavigationSignal
+import it.codingjam.github.util.Signal
 import it.codingjam.github.vo.lce
 import kotlinx.coroutines.experimental.CoroutineScope
 import javax.inject.Inject
@@ -35,5 +35,5 @@ class RepoUseCase @Inject constructor(
         githubInteractor.loadRepo(repoId.owner, repoId.name)
     }
 
-    fun openUserDetail(login: String) = NavigationSignal("user", login)
+    fun openUserDetail(login: String) = Signal.NavigationSignal("user", login)
 }

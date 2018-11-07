@@ -3,6 +3,7 @@ package it.codingjam.github.ui.common
 import android.os.Bundle
 import android.os.Parcelable
 import android.support.annotation.IdRes
+import android.support.annotation.NavigationRes
 import android.support.v4.app.Fragment
 import androidx.core.os.bundleOf
 import androidx.navigation.fragment.findNavController
@@ -10,8 +11,8 @@ import androidx.navigation.fragment.findNavController
 const val FRAGMENT_CREATOR_PARAM = "param"
 
 open class FragmentCreator<T>(
-        @IdRes val graphId: Int,
-        @IdRes val nodeId: Int
+    @NavigationRes val graphId: Int,
+    @IdRes val nodeId: Int
 ) {
     @Suppress("UNCHECKED_CAST")
     val Fragment.param: T

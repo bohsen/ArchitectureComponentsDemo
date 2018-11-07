@@ -5,10 +5,13 @@ import com.nalulabs.prefs.string
 import it.codingjam.github.core.GithubInteractor
 import it.codingjam.github.core.OpenForTesting
 import it.codingjam.github.core.RepoId
-import it.codingjam.github.util.*
+import it.codingjam.github.util.Signal
+import it.codingjam.github.util.produceActions
+import it.codingjam.github.util.send
+import it.codingjam.github.util.sendAll
 import it.codingjam.github.vo.lce
 import kotlinx.coroutines.experimental.CoroutineScope
-import java.util.*
+import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -43,7 +46,7 @@ class SearchUseCase @Inject constructor(
                     }
                 } catch (t: Exception) {
                     send { copy(loadingMore = false) }
-                    send(ErrorSignal(t))
+                    send(Signal.ErrorSignal(t))
                 }
             }
         }
@@ -60,5 +63,5 @@ class SearchUseCase @Inject constructor(
         }
     }
 
-    fun openRepoDetail(id: RepoId) = NavigationSignal("repo", id)
+    fun openRepoDetail(id: RepoId) = Signal.NavigationSignal("repo", id)
 }
